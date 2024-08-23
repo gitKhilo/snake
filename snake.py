@@ -7,26 +7,28 @@ pygame.init()
 # Set up display
 width, height = 600, 400
 display = pygame.display.set_mode((width, height))
-pygame.display.set_caption("Snake Game")
+pygame.display.set_caption("Colorful Snake Game")
 
 # Define colors
 black = (0, 0, 0)
 red = (213, 50, 80)
 green = (0, 255, 0)
 blue = (50, 153, 213)
+yellow = (255, 255, 102)
+white = (255, 255, 255)
 
 # Set up clock and speed
 clock = pygame.time.Clock()
-snake_speed = 15
+snake_speed = 10  # Slower speed
 snake_block = 10
 
 # Set up fonts
 font_style = pygame.font.SysFont("bahnschrift", 25)
 score_font = pygame.font.SysFont("comicsansms", 35)
 
-def our_snake(snake_block, snake_list):
+def our_snake(snake_block, snake_list, snake_color):
     for x in snake_list:
-        pygame.draw.rect(display, black, [x[0], x[1], snake_block, snake_block])
+        pygame.draw.rect(display, snake_color, [x[0], x[1], snake_block, snake_block])
 
 def message(msg, color):
     mesg = font_style.render(msg, True, color)
@@ -48,10 +50,14 @@ def gameLoop():
     foodx = round(random.randrange(0, width - snake_block) / 10.0) * 10.0
     foody = round(random.randrange(0, height - snake_block) / 10.0) * 10.0
 
+    snake_color = green
+    food_color = red
+    bg_color = blue
+
     while not game_over:
 
         while game_close == True:
-            display.fill(blue)
+            display.fill(bg_color)
             message("You Lost! Press C-Play Again or Q-Quit", red)
             pygame.display.update()
 
@@ -84,8 +90,12 @@ def gameLoop():
             game_close = True
         x1 += x1_change
         y1 += y1_change
-        display.fill(blue)
-        pygame.draw.rect(display, green, [foodx, foody, snake_block, snake_block])
+        display.fill(bg_color)
+
+        # Flashing food color
+        food_color = random.choice([red, yellow, white])
+        pygame.draw.rect(display, food_color, [foodx, foody, snake_block, snake_block])
+
         snake_head = []
         snake_head.append(x1)
         snake_head.append(y1)
@@ -97,7 +107,9 @@ def gameLoop():
             if x == snake_head:
                 game_close = True
 
-        our_snake(snake_block, snake_list)
+        # Changing snake color based on length
+        snake_color = random.choice([green, yellow, white])
+        our_snake(snake_block, snake_list, snake_color)
         pygame.display.update()
 
         if x1 == foodx and y1 == foody:
