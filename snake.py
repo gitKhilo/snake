@@ -1,13 +1,12 @@
 import pygame
-import time
 import random
 
 pygame.init()
 
-# Set up display
-width, height = 600, 400
+# Set up display (1.5x larger)
+width, height = 900, 600
 display = pygame.display.set_mode((width, height))
-pygame.display.set_caption("Colorful Snake Game")
+pygame.display.set_caption("Snake Game")
 
 # Define colors
 black = (0, 0, 0)
@@ -19,16 +18,21 @@ white = (255, 255, 255)
 
 # Set up clock and speed
 clock = pygame.time.Clock()
-snake_speed = 10  # Slower speed
-snake_block = 10
+snake_speed = 10
+snake_block = 30  # 3x bigger
 
 # Set up fonts
 font_style = pygame.font.SysFont("bahnschrift", 25)
 score_font = pygame.font.SysFont("comicsansms", 35)
 
-def our_snake(snake_block, snake_list, snake_color):
-    for x in snake_list:
-        pygame.draw.rect(display, snake_color, [x[0], x[1], snake_block, snake_block])
+def draw_snake(snake_block, snake_list):
+    for i, x in enumerate(snake_list):
+        pygame.draw.rect(display, green, [x[0], x[1], snake_block, snake_block])
+        pygame.draw.circle(display, black, (x[0] + snake_block // 2, x[1] + snake_block // 2), snake_block // 4)
+
+def draw_walls(walls):
+    for wall in walls:
+        pygame.draw.rect(display, red, [wall[0], wall[1], wall[2], wall[3]])
 
 def message(msg, color):
     mesg = font_style.render(msg, True, color)
@@ -47,17 +51,20 @@ def gameLoop():
     snake_list = []
     length_of_snake = 1
 
-    foodx = round(random.randrange(0, width - snake_block) / 10.0) * 10.0
-    foody = round(random.randrange(0, height - snake_block) / 10.0) * 10.0
+    foodx = round(random.randrange(0, width - snake_block) / 30.0) * 30.0
+    foody = round(random.randrange(0, height - snake_block) / 30.0) * 30.0
 
-    snake_color = green
-    food_color = red
-    bg_color = blue
+    # Define walls (3 or 4 small walls)
+    walls = [
+        (150, 150, 300, 30),  # Horizontal wall
+        (450, 450, 30, 300),  # Vertical wall
+        (600, 100, 200, 30),  # Horizontal wall
+    ]
 
     while not game_over:
 
-        while game_close == True:
-            display.fill(bg_color)
+        while game_close:
+            display.fill(blue)
             message("You Lost! Press C-Play Again or Q-Quit", red)
             pygame.display.update()
 
@@ -88,33 +95,31 @@ def gameLoop():
 
         if x1 >= width or x1 < 0 or y1 >= height or y1 < 0:
             game_close = True
+
         x1 += x1_change
         y1 += y1_change
-        display.fill(bg_color)
 
-        # Flashing food color
-        food_color = random.choice([red, yellow, white])
-        pygame.draw.rect(display, food_color, [foodx, foody, snake_block, snake_block])
+        display.fill(blue)
 
-        snake_head = []
-        snake_head.append(x1)
-        snake_head.append(y1)
+        # Draw food and walls
+        pygame.draw.rect(display, white, [foodx, foody, snake_block, snake_block])
+        draw_walls(walls)
+
+        snake_head = [x1, y1]
         snake_list.append(snake_head)
         if len(snake_list) > length_of_snake:
             del snake_list[0]
 
-        for x in snake_list[:-1]:
-            if x == snake_head:
-                game_close = True
+        # Check for collision with walls or self
+        if any([x == snake_head for x in snake_list[:-1]]) or any([wall[0] <= x1 < wall[0] + wall[2] and wall[1] <= y1 < wall[1] + wall[3] for wall in walls]):
+            game_close = True
 
-        # Changing snake color based on length
-        snake_color = random.choice([green, yellow, white])
-        our_snake(snake_block, snake_list, snake_color)
+        draw_snake(snake_block, snake_list)
         pygame.display.update()
 
         if x1 == foodx and y1 == foody:
-            foodx = round(random.randrange(0, width - snake_block) / 10.0) * 10.0
-            foody = round(random.randrange(0, height - snake_block) / 10.0) * 10.0
+            foodx = round(random.randrange(0, width - snake_block) / 30.0) * 30.0
+            foody = round(random.randrange(0, height - snake_block) / 30.0) * 30.0
             length_of_snake += 1
 
         clock.tick(snake_speed)
