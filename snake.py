@@ -15,6 +15,7 @@ green = (0, 255, 0)
 blue = (50, 153, 213)
 yellow = (255, 255, 102)
 white = (255, 255, 255)
+dark_blue = (0, 0, 128)
 
 # Set up clock and speed
 clock = pygame.time.Clock()
@@ -27,12 +28,24 @@ score_font = pygame.font.SysFont("comicsansms", 35)
 
 def draw_snake(snake_block, snake_list):
     for i, x in enumerate(snake_list):
-        pygame.draw.rect(display, green, [x[0], x[1], snake_block, snake_block])
-        pygame.draw.circle(display, black, (x[0] + snake_block // 2, x[1] + snake_block // 2), snake_block // 4)
+        if i == 0:
+            # Draw snake's head
+            pygame.draw.rect(display, green, [x[0], x[1], snake_block, snake_block])
+            pygame.draw.circle(display, black, (x[0] + snake_block // 2, x[1] + snake_block // 2), snake_block // 4)
+        else:
+            # Draw snake's body
+            pygame.draw.rect(display, green, [x[0], x[1], snake_block, snake_block])
 
 def draw_walls(walls):
     for wall in walls:
         pygame.draw.rect(display, red, [wall[0], wall[1], wall[2], wall[3]])
+
+def draw_food(foodx, foody):
+    pygame.draw.circle(display, red, (foodx + snake_block // 2, foody + snake_block // 2), snake_block // 2)
+
+def show_score(score):
+    value = score_font.render(f"Score: {score}", True, white)
+    display.blit(value, [0, 0])
 
 def message(msg, color):
     mesg = font_style.render(msg, True, color)
@@ -50,6 +63,7 @@ def gameLoop():
 
     snake_list = []
     length_of_snake = 1
+    score = 0
 
     foodx = round(random.randrange(0, width - snake_block) / 30.0) * 30.0
     foody = round(random.randrange(0, height - snake_block) / 30.0) * 30.0
@@ -64,7 +78,7 @@ def gameLoop():
     while not game_over:
 
         while game_close:
-            display.fill(blue)
+            display.fill(dark_blue)
             message("You Lost! Press C-Play Again or Q-Quit", red)
             pygame.display.update()
 
@@ -93,17 +107,25 @@ def gameLoop():
                     y1_change = snake_block
                     x1_change = 0
 
-        if x1 >= width or x1 < 0 or y1 >= height or y1 < 0:
-            game_close = True
+        # Wrap the snake around the screen
+        if x1 >= width:
+            x1 = 0
+        elif x1 < 0:
+            x1 = width - snake_block
+        if y1 >= height:
+            y1 = 0
+        elif y1 < 0:
+            y1 = height - snake_block
 
         x1 += x1_change
         y1 += y1_change
 
-        display.fill(blue)
+        display.fill(dark_blue)
 
         # Draw food and walls
-        pygame.draw.rect(display, white, [foodx, foody, snake_block, snake_block])
+        draw_food(foodx, foody)
         draw_walls(walls)
+        show_score(score)
 
         snake_head = [x1, y1]
         snake_list.append(snake_head)
@@ -121,6 +143,7 @@ def gameLoop():
             foodx = round(random.randrange(0, width - snake_block) / 30.0) * 30.0
             foody = round(random.randrange(0, height - snake_block) / 30.0) * 30.0
             length_of_snake += 1
+            score += 1
 
         clock.tick(snake_speed)
 
